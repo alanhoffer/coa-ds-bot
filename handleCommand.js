@@ -32,6 +32,9 @@ export async function handleCommand(message) {
     }
     // Metodo para cambiar el numero de patreon y boosty del usuario en reigdnqu_clashofadventurers.firstadventurers campo patreon_ patreonTier tinyint UNSIGNED NOT NULL,  BoostyTier tinyint UNSIGNED NOT NULL,
     if (command === 'updatesupporter') {
+        if (!message.member.permissions.has('ADMINISTRATOR')) {
+            return message.reply('❌ You do not have permission to use this command.');
+        }
         const [socialType, tier] = args;
         if (!socialType || !tier) {
             return message.reply('❌ Please provide a social type (patreon/boosty) and a tier.');
