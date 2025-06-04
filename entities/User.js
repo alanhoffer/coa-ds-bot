@@ -52,6 +52,42 @@ class User {
         }
     }
 
+    // Metodo para cambiar el numero de patreon y boosty del usuario en reigdnqu_clashofadventurers.firstadventurers campo patreon_ patreonTier tinyint UNSIGNED NOT NULL,  BoostyTier tinyint UNSIGNED NOT NULL,
+    async updateSupporterTier(nickname, socialType, tier) {
+        const socialColumnsMap = {
+            patreon: 'patreon_tier',
+            boosty: 'boosty_tier',
+        };
+
+        const columnName = socialColumnsMap[socialType.toLowerCase()];
+        if (!columnName) {
+            throw new Error(`Tipo de red social inválido: ${socialType}`);
+        }
+
+        if (typeof tier !== 'number' || !Number.isInteger(tier) || tier < 0) {
+            throw new TypeError('tier debe ser un número entero positivo');
+        }
+
+        try {
+            const query = `
+            UPDATE reigdnqu_clashofadventurers.firstadventurers
+            SET ${columnName} = ?
+            WHERE nickname = ?
+        `;
+            const [result] = await this.queryExecutor(query, [tier, nickname]);
+
+            if (result.affectedRows === 0) {
+                throw new Error(`Usuario ${nickname} no encontrado.`);
+            }
+
+            return true; // O podrías retornar el nuevo valor del tier si prefieres
+        } catch (error) {
+            console.error('Error al actualizar el tier:', error.message);
+            throw error; // O podrías retornar false si prefieres que no rompa
+        } finally {
+        }
+    }
+
 
     async addPoints(nickname, pointsToAdd) {
         this._validatePoints(pointsToAdd);

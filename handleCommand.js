@@ -30,7 +30,23 @@ export async function handleCommand(message) {
         message.channel.send(helpMessage);
         return;
     }
+    // Metodo para cambiar el numero de patreon y boosty del usuario en reigdnqu_clashofadventurers.firstadventurers campo patreon_ patreonTier tinyint UNSIGNED NOT NULL,  BoostyTier tinyint UNSIGNED NOT NULL,
+    if (command === 'updatesupporter') {
+        const [socialType, tier] = args;
+        if (!socialType || !tier) {
+            return message.reply('❌ Please provide a social type (patreon/boosty) and a tier.');
+        }
 
+        try {
+            const result = await userService.updateSupporterTier(nickname, socialType, parseInt(tier));
+            if (result) {
+                message.reply(`✅ Successfully updated ${socialType} tier to ${tier}.`);
+            }
+        } catch (error) {
+            console.error(error);
+            message.reply('❌ An error occurred while updating the supporter tier. Please try again later.');
+        }
+    }
 
     if (command === 'admin') {
         // Only admins can use this
