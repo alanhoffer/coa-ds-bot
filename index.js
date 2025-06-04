@@ -3,6 +3,8 @@ import { CONFIG } from './config/config.js';
 import { handleCommand } from './handleCommand.js'; // (opcional si usas slash commands)
 import { handlePointsPerMessage } from './utils/pointsPerMessage.js'; // función para sumar puntos
 import { COMMANDS_PREFIX, WELCOME_CHANNEL_ID } from './config/config.js';
+import { getRolePickers } from './utils/roleStorage.js';
+
 
 
 const client = new Client({
@@ -14,6 +16,24 @@ const client = new Client({
     ],
     partials: [Partials.Channel]
 });
+
+client.commands = new Collection();
+const commands = [];
+
+const commandsPath = './commands';
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const command = await import(`./commands/${file}`);
+    client.commands.set(command.data.name, command);
+    commands.push(command.data.toJSON());
+}
+
+const rest = new REST({ version: '10' }).setToken(CONFIG.discordBotToken);
+await rest.put(
+    Routes.applicationCommands(CONFIG.clientId),
+    { body: commands }
+);
 
 
 client.once('ready', async () => {
@@ -48,6 +68,29 @@ client.on('messageCreate', async (message) => {
 
     // Si no es comando, sumar puntos por mensaje / media
     await handlePointsPerMessage(message);
+});
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isStringSelectMenu()) return;
+
+    const pickers = await getRolePickers();
+    const roles = pickers[interaction.message.id];
+    if (!roles) return;
+
+    const selected = interaction.values[0];
+    const role = interaction.guild.roles.cache.find(r => r.name === selected);
+    if (!role) {
+        return interaction.reply({ content: `Rol "${selected}" no encontrado.`, ephemeral: true });
+    }
+
+    const member = interaction.member;
+    if (member.roles.cache.has(role.id)) {
+        await member.roles.remove(role);
+        return interaction.reply({ content: `Rol "${selected}" removido.`, ephemeral: true });
+    } else {
+        await member.roles.add(role);
+        return interaction.reply({ content: `Rol "${selected}" asignado.`, ephemeral: true });
+    }
 });
 
 client.login(CONFIG.discordBotToken);
