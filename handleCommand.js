@@ -4,6 +4,7 @@ import User from './entities/User.js';
 import { generateTopImage, generateUserBanner } from './utils/generateTopImage.js';
 import { CHEST_REWARDS, CHEST_PRICE, CLAIM_FILE, CLAIM_ROLE_NAME, COMMANDS_PREFIX } from './config/config.js';
 import { queryWithReconnect } from './utils/conection.js';
+import { capitalize } from './helpers/Capitalize.js';
 
 
 const userService = new User(queryWithReconnect);
@@ -30,26 +31,105 @@ export async function handleCommand(message) {
         message.channel.send(helpMessage);
         return;
     }
-    // Metodo para cambiar el numero de patreon y boosty del usuario en reigdnqu_clashofadventurers.firstadventurers campo patreon_ patreonTier tinyint UNSIGNED NOT NULL,  BoostyTier tinyint UNSIGNED NOT NULL,
-    if (command === 'updatesupporter') {
-        if (!message.member.permissions.has('ADMINISTRATOR')) {
+    // obtain suppoter passing nickname & socialType
+    if (command === 'getsupporter') {
+        if (!message.member || !message.member.permissions.has('Administrator')) {
             return message.reply('❌ You do not have permission to use this command.');
         }
-        const [socialType, tier] = args;
-        if (!socialType || !tier) {
-            return message.reply('❌ Please provide a social type (patreon/boosty) and a tier.');
+
+        // Extraer argumentos
+        const [arg1, arg2] = args;
+        const validSocials = ['patreon', 'boosty'];
+
+        let nickname = null;
+        let selectedSocial = null;
+
+        // Determinar si los argumentos contienen socialType
+        if (arg1 && validSocials.includes(arg1.toLowerCase())) {
+            // Solo se pasó el tipo de red social (para el usuario actual)
+            selectedSocial = arg1.toLowerCase();
+        } else if (arg2 && validSocials.includes(arg2.toLowerCase())) {
+            // Se pasó nickname + tipo de red social
+            nickname = arg1;
+            selectedSocial = arg2.toLowerCase();
+        } else if (arg1) {
+            // Se pasó solo nickname
+            nickname = arg1;
         }
 
         try {
-            const result = await userService.updateSupporterTier(nickname, socialType, parseInt(tier));
-            if (result) {
-                message.reply(`✅ Successfully updated ${socialType} tier to ${tier}.`);
+            // Si no se proporcionó nickname, usar el del autor
+            if (!nickname) {
+                const username = message.author.username;
+                nickname = await userService.getNicknameBySocialId('discord', username);
+                if (!nickname) {
+                    return message.reply('❌ Please register using the form before checking your supporter status.');
+                }
             }
+
+            let response = `🎉 **Supporter Status for ${nickname}:**\n`;
+
+            if (selectedSocial) {
+                const tier = await userService.getSupporterTier(nickname, selectedSocial);
+                if (tier) {
+                    response += `${capitalize(selectedSocial)} Tier: ${tier}`;
+                } else {
+                    response += `${capitalize(selectedSocial)} Tier: Not a ${capitalize(selectedSocial)} supporter`;
+                }
+            } else {
+                const patreonTier = await userService.getSupporterTier(nickname, 'patreon');
+                const boostyTier = await userService.getSupporterTier(nickname, 'boosty');
+
+                response += patreonTier
+                    ? `Patreon Tier: ${patreonTier}\n`
+                    : `Patreon Tier: Not a Patreon supporter\n`;
+                response += boostyTier
+                    ? `Boosty Tier: ${boostyTier}\n`
+                    : `Boosty Tier: Not a Boosty supporter\n`;
+            }
+
+            message.reply(response);
         } catch (error) {
-            console.error(error);
-            message.reply('❌ An error occurred while updating the supporter tier. Please try again later.');
+            console.error('❌ Error while retrieving supporter status:', error);
+            message.reply('❌ An error occurred while retrieving the supporter status. Please try again later.');
         }
     }
+
+
+    if (command === 'updatesupporter') {
+        if (!message.member || !message.member.permissions.has('Administrator')) {
+            return message.reply('❌ You do not have permission to use this command.');
+        }
+
+        const [nickname, socialType, tierArg] = args;
+
+        if (!nickname || !socialType || !tierArg) {
+            return message.reply('❌ Usage: !updatesupporter <nickname> <patreon|boosty> <tier>');
+        }
+
+        const tier = parseInt(tierArg, 10);
+        if (isNaN(tier) || tier < 0) {
+            return message.reply('❌ Tier must be a positive integer (0 or higher).');
+        }
+
+        const validSocials = ['patreon', 'boosty'];
+        if (!validSocials.includes(socialType.toLowerCase())) {
+            return message.reply('❌ Invalid social type. Use "patreon" or "boosty".');
+        }
+
+        try {
+            const success = await userService.updateSupporterTier(nickname, socialType, tier);
+            if (success) {
+                return message.reply(`✅ Successfully updated ${capitalize(socialType)} tier for **${nickname}** to **${tier}**.`);
+            } else {
+                return message.reply('❌ Failed to update supporter tier. Please check the nickname.');
+            }
+        } catch (error) {
+            console.error('❌ Error updating supporter tier:', error);
+            return message.reply('❌ An error occurred while updating the supporter tier.');
+        }
+    }
+
 
     if (command === 'admin') {
         // Only admins can use this
@@ -127,7 +207,6 @@ We’re excited to have you join this early stage of the game. Here are some imp
         message.channel.send(alphaInfo);
         return;
     }
-
 
     if (command === 'support') {
         const supportMessage = `**Need help? Here’s how to contact us:**
@@ -266,7 +345,6 @@ We’re excited to have you join this early stage of the game. Here are some imp
         }
         return;
     }
-
 
     if (command === 'ranking') {
         try {
@@ -445,13 +523,13 @@ We’re excited to have you join this early stage of the game. Here are some imp
         const nickname = args[0];
 
         if (!nickname) {
-            return message.reply('Correct usage: !getLevelByNickname username');
+            return message.reply('Correct usage: !getlevel username');
         }
 
         console.log(`Retrieving level for ${nickname}`);
 
         try {
-            const level = await userService.getLevelByNickname(nickname);
+            const level = await userService.getUserLevel(nickname);
             message.channel.send(`**${nickname}** has adventurer level **${level}**.`);
         } catch (error) {
             console.error(error);
@@ -476,11 +554,36 @@ We’re excited to have you join this early stage of the game. Here are some imp
         console.log(`Adding level to ${nickname}`);
 
         try {
-            const newLevel = await userService.addLevelByNickname(nickname);
+            const newLevel = await userService.addUserLevel(nickname);
             message.channel.send(`✅ One level was added to **${nickname}**. New level: **${newLevel}**.`);
         } catch (error) {
             console.error(error);
             message.channel.send('❌ Error while adding level.');
         }
     }
+
+    if (command === 'setlevel') {
+        // Only admins can use this
+        if (!message.member.permissions.has('ADMINISTRATOR')) {
+            return message.reply('❌ You do not have permission to use this command.');
+        }
+
+        const nickname = args[0];
+        const level = parseInt(args[1], 10);
+
+        if (!nickname || isNaN(level)) {
+            return message.reply('Correct usage: !setlevel username level');
+        }
+
+        console.log(`Setting level ${level} for ${nickname}`);
+
+        try {
+            await userService.setUserLevel(nickname, level);
+            message.channel.send(`✅ Level of **${nickname}** was set to **${level}**.`);
+        } catch (error) {
+            console.error(error);
+            message.channel.send('❌ Error while setting level.');
+        }
+    }
+
 }

@@ -52,11 +52,39 @@ class User {
         }
     }
 
+    async getSupporterTier(nickname, socialType) {
+        const socialColumnsMap = {
+            patreon: 'patreonTier',
+            boosty: 'BoostyTier',
+        };
+        const columnName = socialColumnsMap[socialType.toLowerCase()];
+        if (!columnName) {
+            throw new Error(`Tipo de red social inválido: ${socialType}`);
+        }
+        try {
+            const query = `
+            SELECT ${columnName}
+            FROM reigdnqu_clashofadventurers.firstadventurers
+            WHERE nickname = ?
+            LIMIT 1
+        `;
+            const [rows] = await this.queryExecutor(query, [nickname]);
+            if (rows.length === 0) {
+                throw new Error(`Usuario ${nickname} no encontrado.`);
+            }
+            return rows[0][columnName];
+        } catch (error) {
+            console.error('❌ Error al obtener el tier de apoyo:', error.message);
+            return null;
+        } finally {
+        }
+    }
+
     // Metodo para cambiar el numero de patreon y boosty del usuario en reigdnqu_clashofadventurers.firstadventurers campo patreon_ patreonTier tinyint UNSIGNED NOT NULL,  BoostyTier tinyint UNSIGNED NOT NULL,
     async updateSupporterTier(nickname, socialType, tier) {
         const socialColumnsMap = {
-            patreon: 'patreon_tier',
-            boosty: 'boosty_tier',
+            patreon: 'patreonTier',
+            boosty: 'BoostyTier',
         };
 
         const columnName = socialColumnsMap[socialType.toLowerCase()];
@@ -90,23 +118,106 @@ class User {
 
 
     async addPoints(nickname, pointsToAdd) {
-        this._validatePoints(pointsToAdd);
-        const conn = 1
+        if (typeof pointsToAdd !== 'number' || !Number.isInteger(pointsToAdd) || pointsToAdd < 0) {
+            throw new TypeError('pointsToAdd debe ser un número entero positivo');
+        }
+
         try {
-            const [result] = await this.queryExecutor(
-                'UPDATE reigdnqu_clashofadventurers.firstadventurers SET points = points + ? WHERE nickname = ?',
-                [pointsToAdd, nickname]
+            console.log(`🔍 Buscando usuario: ${nickname}`);
+
+            // Buscar al usuario
+            const [userRows] = await this.queryExecutor(
+                'SELECT points, level FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
+                [nickname]
             );
-            if (result.affectedRows === 0) {
-                throw new Error(`Usuario ${nickname} no encontrado.`);
+
+            let currentPoints = 0;
+            let currentLevel = 0;
+
+            if (userRows.length === 0) {
+                console.log('👤 Usuario nuevo, inicializando valores');
+                currentPoints = pointsToAdd;
+                currentLevel = 0;
+            } else {
+                currentPoints = userRows[0].points || 0;
+                currentLevel = userRows[0].level || 0;
+                console.log(`🎮 Usuario actual - Nivel: ${currentLevel}, Puntos: ${currentPoints}`);
+                currentPoints += pointsToAdd;
             }
 
-            const [rows] = await this.queryExecutor('SELECT points FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ?', [nickname]);
-            return rows[0].points;
-        } finally {
-            console.log('finally')
+            console.log(`➕ Sumando puntos: ${pointsToAdd}, Total puntos ahora: ${currentPoints}`);
+
+            let leveledUp = false;
+
+            while (true) {
+                // Obtener puntos necesarios para subir al siguiente nivel
+                const [nextLevelReqRows] = await this.queryExecutor(
+                    'SELECT required_points FROM reigdnqu_clashofadventurers.levels WHERE level = ?',
+                    [currentLevel + 1]
+                );
+
+                if (nextLevelReqRows.length === 0) {
+                    console.log('🚫 No hay siguiente nivel, terminando bucle de subida');
+                    break;
+                }
+
+                const requiredForNextLevel = nextLevelReqRows[0].required_points;
+                console.log(`🔜 Requisito para subir del nivel ${currentLevel} al ${currentLevel + 1}: ${requiredForNextLevel} puntos`);
+
+                if (currentPoints >= requiredForNextLevel) {
+                    currentPoints -= requiredForNextLevel;
+                    currentLevel += 1;
+                    leveledUp = true;
+                    console.log(`⬆️  ¡Subió a nivel ${currentLevel}! Puntos restantes: ${currentPoints}`);
+                } else {
+                    console.log('🔻 No hay puntos suficientes para subir de nivel');
+                    break;
+                }
+            }
+
+            // Guardar o actualizar usuario
+            if (userRows.length === 0) {
+                console.log(`🆕 Insertando nuevo usuario: ${nickname} con nivel ${currentLevel} y puntos ${currentPoints}`);
+                await this.queryExecutor(
+                    'INSERT INTO reigdnqu_clashofadventurers.firstadventurers (nickname, points, level) VALUES (?, ?, ?)',
+                    [nickname, currentPoints, currentLevel]
+                );
+            } else {
+                console.log(`💾 Actualizando usuario: ${nickname} a nivel ${currentLevel} con puntos ${currentPoints}`);
+                await this.queryExecutor(
+                    'UPDATE reigdnqu_clashofadventurers.firstadventurers SET points = ?, level = ? WHERE nickname = ?',
+                    [currentPoints, currentLevel, nickname]
+                );
+            }
+
+            // Calcular puntos restantes para siguiente nivel
+            const [nextLevelRows] = await this.queryExecutor(
+                'SELECT required_points FROM reigdnqu_clashofadventurers.levels WHERE level = ?',
+                [currentLevel + 1]
+            );
+
+            let pointsToNextLevel = 0;
+            if (nextLevelRows.length > 0) {
+                pointsToNextLevel = nextLevelRows[0].required_points - currentPoints;
+                if (pointsToNextLevel < 0) pointsToNextLevel = 0;
+            }
+
+            console.log(`📊 Resultado final para ${nickname} - Nivel: ${currentLevel}, Puntos en nivel: ${currentPoints}, Puntos para siguiente nivel: ${pointsToNextLevel}`);
+
+            return {
+                leveledUp,
+                currentLevel,
+                currentPoints,
+                pointsToNextLevel,
+            };
+
+        } catch (error) {
+            console.error('❌ Error en addPoints:', error.message);
+            return null;
         }
     }
+
+
     async removePoints(nickname, pointsToRemove) {
         this._validatePoints(pointsToRemove);
         const conn = 1
@@ -195,19 +306,18 @@ class User {
     }
 
     async getUserStatsByNickname(nicknameToFind) {
-        const conn = 1
         try {
-            // 1) Obtener todos los usuarios ordenados por level DESC, experience DESC
+            // 1) Obtener todos los usuarios ordenados por level DESC, points DESC
             const [rows] = await this.queryExecutor(`
-            SELECT nickname, experience, level
+            SELECT nickname, points, level
             FROM reigdnqu_clashofadventurers.firstadventurers
-            ORDER BY level DESC, experience DESC
+            ORDER BY level DESC, points DESC
         `);
 
             const lowerNick = nicknameToFind.toLowerCase();
             const users = rows.map(row => ({
                 nickname: row.nickname,
-                exp: row.experience || 0,
+                points: row.points || 0,
                 level: row.level || 0,
             }));
 
@@ -216,16 +326,22 @@ class User {
 
             const user = users[rank];
 
-            // 2) Obtener experiencia requerida para el siguiente nivel desde tabla reigdnqu_clashofadventurers.levels
+            // 2) Obtener puntos requeridos para el siguiente nivel desde tabla de niveles
             const [[nextLevelRow]] = await this.queryExecutor(
-                'SELECT exp_required FROM reigdnqu_clashofadventurers.levels WHERE level = ?',
+                'SELECT required_points FROM reigdnqu_clashofadventurers.levels WHERE level = ?',
                 [user.level + 1]
             );
 
+            let pointsToNextLevel = null;
+            if (nextLevelRow) {
+                pointsToNextLevel = nextLevelRow.required_points;
+                if (pointsToNextLevel < 0) pointsToNextLevel = 0;
+            }
+
             return {
                 nickname: user.nickname,
-                expCurrent: user.exp,
-                expToNextLevel: nextLevelRow.exp_required,  // puede ser null si está en el nivel máximo
+                pointsCurrent: user.points,
+                pointsToNextLevel: pointsToNextLevel,
                 level: user.level,
                 rank: rank + 1,
             };
@@ -233,59 +349,10 @@ class User {
             console.error('❌ Error al obtener los datos del usuario:', error.message);
             return null;
         } finally {
-            console.log('finally')
+            console.log('finally');
         }
     }
 
-
-    async addExpByNickname(nickname, amount) {
-        if (typeof amount !== 'number' || !Number.isInteger(amount) || amount < 0) {
-            throw new TypeError('amount debe ser un número entero positivo');
-        }
-
-        const conn = 1
-        try {
-            // 1) Obtener experiencia y nivel actuales del usuario
-            const [rows] = await this.queryExecutor(
-                'SELECT experience, level FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
-                [nickname]
-            );
-
-            if (rows.length === 0) {
-                throw new Error(`Usuario ${nickname} no encontrado.`);
-            }
-
-            let currentExp = rows[0].experience || 0;
-            let currentLevel = rows[0].level || 1;
-
-            currentExp += amount;
-
-            // Función para calcular experiencia para subir nivel
-            const expToNextLevel = (level) => 100 + (level - 1) * 50;
-
-            let leveledUp = false;
-
-            // 2) Ciclo para subir niveles mientras haya experiencia suficiente
-            while (currentExp >= expToNextLevel(currentLevel)) {
-                currentExp -= expToNextLevel(currentLevel);
-                currentLevel++;
-                leveledUp = true;
-            }
-
-            // 3) Actualizar en DB
-            await this.queryExecutor(
-                'UPDATE reigdnqu_clashofadventurers.firstadventurers SET experience = ?, level = ? WHERE nickname = ?',
-                [currentExp, currentLevel, nickname]
-            );
-
-            return leveledUp;
-        } catch (error) {
-            console.error('❌ Error al agregar experiencia:', error.message);
-            return false;
-        } finally {
-            console.log('finally')
-        }
-    }
 
     async updateUserLevel(nickname) {
         const conn = 1
@@ -399,117 +466,6 @@ class User {
         }
     }
 
-
-    async getUserExperience(nickname) {
-        const conn = 1
-        try {
-            const [rows] = await this.queryExecutor(
-                'SELECT experience FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
-                [nickname]
-            );
-            if (rows.length === 0) {
-                throw new Error(`Usuario ${nickname} no encontrado.`);
-            }
-            return rows[0].experience;
-        } catch (error) {
-            console.error('❌ Error al obtener la experiencia del usuario:', error.message);
-            return null;
-        } finally {
-            console.log('finally')
-        }
-    }
-
-
-    async addExp(nickname, expToAdd) {
-        if (typeof expToAdd !== 'number' || !Number.isInteger(expToAdd) || expToAdd < 0) {
-            throw new TypeError('expToAdd debe ser un número entero positivo');
-        }
-
-        const conn = 1
-        try {
-            // Obtener experiencia y nivel actual
-            const [userRows] = await this.queryExecutor(
-                'SELECT experience, level FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
-                [nickname]
-            );
-            if (userRows.length === 0) {
-                throw new Error(`Usuario ${nickname} no encontrado.`);
-            }
-            let currentExp = userRows[0].experience || 0;
-            let currentLevel = userRows[0].level || 1;
-
-            // Sumar experiencia
-            currentExp += expToAdd;
-
-            // Obtener nivel según experiencia acumulada
-            const [levelRows] = await this.queryExecutor(
-                'SELECT level FROM reigdnqu_clashofadventurers.levels WHERE exp_required <= ? ORDER BY exp_required DESC LIMIT 1',
-                [currentExp]
-            );
-            if (levelRows.length === 0) {
-                throw new Error('No se encontró nivel para esta experiencia.');
-            }
-            const newLevel = levelRows[0].level;
-
-            // Actualizar en tabla users si hay cambios
-            if (newLevel !== currentLevel || currentExp !== userRows[0].experience) {
-                await this.queryExecutor(
-                    'UPDATE reigdnqu_clashofadventurers.firstadventurers SET experience = ?, level = ? WHERE nickname = ?',
-                    [currentExp, newLevel, nickname]
-                );
-            }
-
-            // Calcular experiencia faltante para siguiente nivel
-            const [nextLevelRows] = await this.queryExecutor(
-                'SELECT exp_required FROM reigdnqu_clashofadventurers.levels WHERE level = ?',
-                [newLevel + 1]
-            );
-
-            let expToNextLevel = 0;
-            if (nextLevelRows.length > 0) {
-                expToNextLevel = nextLevelRows[0].exp_required - currentExp;
-                if (expToNextLevel < 0) expToNextLevel = 0;
-            }
-
-            return {
-                leveledUp: newLevel > currentLevel,
-                currentLevel: newLevel,
-                currentExp,
-                expToNextLevel,
-            };
-        } catch (error) {
-            console.error('❌ Error en addExp:', error.message);
-            return null;
-        } finally {
-            console.log('finally')
-        }
-    }
-
-
-    async setUserExperience(nickname, newExperience) {
-        if (typeof newExperience !== 'number' || !Number.isInteger(newExperience) || newExperience < 0) {
-            throw new TypeError('newExperience debe ser un número entero positivo');
-        }
-
-        const conn = 1
-        try {
-            const [result] = await this.queryExecutor(
-                'UPDATE reigdnqu_clashofadventurers.firstadventurers SET experience = ? WHERE nickname = ?',
-                [newExperience, nickname]
-            );
-            if (result.affectedRows === 0) {
-                throw new Error(`Usuario ${nickname} no encontrado.`);
-            }
-            return newExperience;
-        } catch (error) {
-            console.error('❌ Error al establecer la experiencia del usuario:', error.message);
-            return null;
-        } finally {
-            console.log('finally')
-        }
-    }
-
-
     async getUserRank(nickname) {
         const conn = 1
         try {
@@ -528,6 +484,74 @@ class User {
             console.log('finally')
         }
     }
+
+    async addUserLevel(nickname, levelToAdd) {
+        if (typeof levelToAdd !== 'number' || !Number.isInteger(levelToAdd) || levelToAdd < 0) {
+            throw new TypeError('levelToAdd debe ser un número entero positivo');
+        }
+
+        const conn = 1
+        try {
+            // Obtener nivel actual
+            const [userRows] = await this.queryExecutor(
+                'SELECT level FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
+                [nickname]
+            );
+            if (userRows.length === 0) {
+                throw new Error(`Usuario ${nickname} no encontrado.`);
+            }
+            let currentLevel = userRows[0].level || 1;
+
+            // Sumar nivel
+            currentLevel += levelToAdd;
+
+            // Actualizar en tabla users si hay cambios
+            await this.queryExecutor(
+                'UPDATE reigdnqu_clashofadventurers.firstadventurers SET level = ? WHERE nickname = ?',
+                [currentLevel, nickname]
+            );
+
+            return currentLevel;
+        } catch (error) {
+            console.error('❌ Error en addUserLevel:', error.message);
+            return null;
+        } finally {
+            console.log('finally')
+        }
+    }
+
+    async setUserLevel(nickname, newLevel) {
+        if (typeof newLevel !== 'number' || !Number.isInteger(newLevel) || newLevel < 0) {
+            throw new TypeError('newLevel debe ser un número entero positivo');
+        }
+
+        try {
+            // Verificar si el usuario existe
+            const [userRows] = await this.queryExecutor(
+                'SELECT level FROM reigdnqu_clashofadventurers.firstadventurers WHERE nickname = ? LIMIT 1',
+                [nickname]
+            );
+            if (userRows.length === 0) {
+                throw new Error(`Usuario ${nickname} no encontrado.`);
+            }
+
+            // Actualizar el nivel directamente
+            await this.queryExecutor(
+                'UPDATE reigdnqu_clashofadventurers.firstadventurers SET level = ? WHERE nickname = ?',
+                [newLevel, nickname]
+            );
+
+            return newLevel;
+        } catch (error) {
+            console.error('❌ Error en setUserLevel:', error.message);
+            return null;
+        } finally {
+            console.log('finally');
+        }
+    }
+
+
+
 
 }
 

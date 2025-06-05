@@ -68,7 +68,7 @@ export async function generateUserBanner(user) {
 
         const avatar = await loadDiscordAvatar(user.avatarPath);
         const avatarSize = 100;
-        const avatarX = 30;
+        const avatarX = 220;
         const avatarY = height / 2 - avatarSize / 2;
         ctx.save();
         ctx.beginPath();
@@ -87,12 +87,12 @@ export async function generateUserBanner(user) {
         ctx.textAlign = 'left';
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 24px Arial';
-        ctx.fillText(user.nickname, 160, 90);
+        ctx.fillText(user.nickname, 350, 90);
 
 
         // Nickname justo debajo
         ctx.font = '22px Arial';
-        ctx.fillText(`Rank #${user.rank}`, 160, 120);
+        ctx.fillText(`Rank #${user.rank}`, 350, 120);
 
         // Círculo con el nivel del usuario
         try {
@@ -124,10 +124,10 @@ export async function generateUserBanner(user) {
     }
 
     try {
-        const barX = 160;
+        const barX = 350;
         const barY = 160;
-        const barWidth = 600;
-        const barHeight = 25;
+        const barWidth = 400;
+        const barHeight = 20;
         const maxPoints = 50000;
         const percent = user.pointsToNextLevel
             ? Math.min(user.pointsCurrent / (user.pointsToNextLevel), 1)
