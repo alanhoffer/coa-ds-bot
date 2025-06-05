@@ -357,7 +357,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
             const imagePath = await generateTopImage(topUsers);
 
             await message.reply({
-                content: `🏆 **Top 5 users with the most Points**`,
+                content: `🏆 **Top 5 users with the most Level & Points**`,
                 files: [imagePath]
             });
 
