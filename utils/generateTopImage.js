@@ -10,6 +10,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let cachedBackground = null;
 
+registerFont(path.join(__dirname, '..', 'fonts', 'static', 'Cinzel-Regular.ttf'), { family: 'Cinzel' });
+registerFont(path.join(__dirname, '..', 'fonts', 'static', 'Cinzel-Bold.ttf'), { family: 'Cinzel', weight: 'bold' });
+
+
+
+
 // Puedes registrar una fuente personalizada si tienes una
 // registerFont(path.join(__dirname, 'fonts', 'YourFont.ttf'), { family: 'YourFont' });
 
@@ -27,17 +33,27 @@ export async function generateTopImage(topUsers) {
     ctx.textAlign = 'right';
     ctx.shadowColor = 'rgba(0,0,0,0.5)';
     ctx.shadowBlur = 4;
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#F4E0C4';
 
     // Título
-    ctx.font = 'bold 32px Arial';
-    ctx.fillText('🏆 Top 5 Users', width - 40, 40);
+    ctx.font = 'bold 28px Cinzel';
+    ctx.fillText('TOP 5 USERS', width - 350, 50);
 
     // Entradas del ranking
-    ctx.font = '22px Arial';
+    ctx.font = '18px Cinzel';
+    ctx.textAlign = 'left';
+    const startX = 280;  // margen izquierdo
+    const rankX = startX;
+    const nameX = startX + 60;
+    const levelX = startX + 300;
+    const pointsX = startX + 400;
+
     topUsers.forEach((user, index) => {
-        const text = `#${index + 1} ${user.nickname} — Lv${user.level} — ${user.points} pts`;
-        ctx.fillText(text, width - 60, 80 + index * 30);
+        const y = 90 + index * 30;
+        ctx.fillText(`#${index + 1}`, rankX, y);
+        ctx.fillText(user.nickname, nameX, y);
+        ctx.fillText(`Level ${user.level}`, levelX, y);
+        ctx.fillText(`${user.points} pts`, pointsX, y);
     });
 
     // Guardar imagen
