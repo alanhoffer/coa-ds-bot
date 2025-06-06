@@ -393,6 +393,11 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
 
     if (command === 'addreferal') {
+
+        if (!message.member.permissions.has('ADMINISTRATOR')) {
+            return message.reply('❌ You do not have permission to use this command.');
+        }
+
         if (args.length < 4) {
             return message.reply('Uso: !addreferal <codigo> <userPoints> <streamerPoints> <streamerDiscordId>');
         }
