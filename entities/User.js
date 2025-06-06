@@ -461,6 +461,7 @@ class User {
             if (result.affectedRows === 0) {
                 // No encontró el nickname, podrías insertar si quieres, o avisar
                 throw new Error(`No se encontró el nickname: ${nickname}`);
+                return false
             }
 
             return true; // actualización exitosa

@@ -353,20 +353,22 @@ We’re excited to have you join this early stage of the game. Here are some imp
     }
 
     if (command === 'points') {
-        // View user's Points
-        const username = message.author.username;
-        const nickname = await userService.getNicknameBySocialId('discord', username);
-        console.log(`Looking up Points for user: ${username} with nickname: ${nickname}`);
-        if (!nickname) {
-            message.reply(
-                `❌ Please register using the form before viewing your Points\n` +
-                `🔹 You currently have **${points}** Points.\n\n`
-            );
-            return;
-        }
         try {
+            const username = message.author.username;
+            const nickname = await userService.getNicknameBySocialId('discord', username);
+
+            console.log(`Looking up Points for user: ${username} with nickname: ${nickname}`);
+
+            if (!nickname) {
+                return message.reply(
+                    `❌ No estás registrado. Usa el formulario para vincular tu cuenta de Discord:\n` +
+                    `🔗 https://tusitio.com/formulario`
+                );
+            }
+
             const points = await userService.getPoints(nickname);
-            message.reply(
+
+            return message.reply(
                 `🎉 Hello **${nickname}**!\n` +
                 `🔹 You currently have **${points}** Points.\n\n` +
                 `🔹 Earn more Points by watching streams, participating in chat, reacting, completing challenges, and much more!\n` +
@@ -374,10 +376,9 @@ We’re excited to have you join this early stage of the game. Here are some imp
                 `🚀 Keep participating and climb the rankings!`
             );
         } catch (error) {
-            console.error(error);
-            message.reply('❌ An error occurred while retrieving your Points.');
+            console.error('Error en el comando !points:', error.message);
+            return message.reply('❌ Ocurrió un error al consultar tus puntos. Intenta nuevamente o contacta al admin.');
         }
-        return;
     }
 
     if (command === 'ranking') {
