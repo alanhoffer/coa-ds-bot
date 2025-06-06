@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Partials, EmbedBuilder } from 'discord.js';
 import { BOOSTER_ROLE_ID, CONFIG } from './config/config.js';
 import { handleCommand } from './handleCommand.js'; // (opcional si usas slash commands)
 import { handlePointsPerMessage } from './utils/pointsPerMessage.js'; // función para sumar puntos
-import { COMMANDS_PREFIX, WELCOME_CHANNEL_ID } from './config/config.js';
+import { COMMANDS_PREFIX, RULES_CHANNEL_ID, WELCOME_CHANNEL_ID } from './config/config.js';
 
 
 const client = new Client({
@@ -29,7 +29,7 @@ client.on('guildMemberAdd', async (member) => {
         .setColor(0x00FF99)
         .setTitle('🎉 A new adventurer has arrived!')
         .setDescription(`👋 Hey <@${member.id}>, welcome to the **Clash of Adventurers** Official Discord Server!\n`
-            + `Check \`!rules\` and \`!help\` to get started.`)
+            + `Check <#${RULES_CHANNEL_ID}> and \`!help\` to get started.`)
         .setThumbnail(member.user.displayAvatarURL())
         .setFooter({ text: 'Get ready for the adventure!' });
 

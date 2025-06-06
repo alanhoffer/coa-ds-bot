@@ -139,7 +139,10 @@ export async function handleCommand(message) {
         const adminHelpMessage = `**Administrator Commands:**
     \`!addpoints <user> <amount>\` - Adds Points to a user.
     \`!getPoints <user>\` - Retrieves a user's Points.
-    \`!addlevel <user>\` - Adds a level to a user.
+    \`!updatesupporter <nickname> <patreon|boosty> <tier>\` - Adds a level to a user.
+    \`!getsupporter <user>\` - Adds a level to a user.
+    \`!setlevel <user>\` - Adds a level to a user.
+    \`!setlevel <user>\` - Adds a level to a user.
     \`!getlevel <user>\` - Retrieves a user's adventurer level.`;
         message.channel.send(adminHelpMessage);
         return;
@@ -508,7 +511,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         try {
             const points = await userService.getPoints(nickname);
             message.channel.send(`**${nickname}** has **${points}** Points.`);
-        } catch (error) {
+        } catch (error) { 
             console.error(error);
             message.channel.send('❌ Error while retrieving Points.');
         }
