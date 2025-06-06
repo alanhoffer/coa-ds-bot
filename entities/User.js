@@ -431,6 +431,45 @@ class User {
         }
     }
 
+    async addSocialToNickname(nickname, socialType, socialId) {
+        const socialColumnsMap = {
+            discord: 'discord_username',
+            youtube: 'youtube_username',
+            twitch: 'twitch_username',
+            instagram: 'instagram_username',
+            tiktok: 'tiktok_username',
+            telegram: 'telegram_username',
+            bluesky: 'bluesky_username',
+            patreon: 'patreon_username',
+            boosty: 'boosty_username',
+            vk: 'vk_username',
+        };
+
+        const columnName = socialColumnsMap[socialType.toLowerCase()];
+        if (!columnName) {
+            throw new Error(`Tipo de red social inválido: ${socialType}`);
+        }
+
+        try {
+            const query = `
+            UPDATE reigdnqu_clashofadventurers.user_socials
+            SET ${columnName} = ?
+            WHERE LOWER(nickname) = LOWER(?)
+        `;
+            const [result] = await this.queryExecutor(query, [socialId, nickname]);
+
+            if (result.affectedRows === 0) {
+                // No encontró el nickname, podrías insertar si quieres, o avisar
+                throw new Error(`No se encontró el nickname: ${nickname}`);
+            }
+
+            return true; // actualización exitosa
+        } catch (error) {
+            console.error('Error al agregar red social:', error.message);
+            throw error;
+        }
+    }
+
     async addUserLevel(nickname, levelToAdd) {
         if (typeof levelToAdd !== 'number' || !Number.isInteger(levelToAdd) || levelToAdd < 0) {
             throw new TypeError('levelToAdd debe ser un número entero positivo');

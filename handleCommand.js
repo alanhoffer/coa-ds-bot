@@ -95,6 +95,26 @@ export async function handleCommand(message) {
         }
     }
 
+    if (command === '!addsocial') {
+        const nickname = await userService.getNicknameBySocialId('discord', username);
+        if (!nickname) {
+            message.reply('❌ Please register in the !web before adding social.');
+            return;
+        }
+        if (args.length < 3) {
+            client.say(channel, `@${tags.username}, correct usage: !addsocial <twitch;youtube;> <socialId>`);
+            return;
+        }
+
+        const [socialType, socialId] = args;
+
+        try {
+            await userService.addSocialToNickname(nickname, socialType, socialId);
+            client.say(channel, `@${tags.username}, social media ${socialType} successfully added for nickname ${nickname}.`);
+        } catch (error) {
+            client.say(channel, `@${tags.username}, error: ${error.message}`);
+        }
+    }
 
     if (command === 'updatesupporter') {
         if (!message.member || !message.member.permissions.has('Administrator')) {
@@ -511,7 +531,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         try {
             const points = await userService.getPoints(nickname);
             message.channel.send(`**${nickname}** has **${points}** Points.`);
-        } catch (error) { 
+        } catch (error) {
             console.error(error);
             message.channel.send('❌ Error while retrieving Points.');
         }
