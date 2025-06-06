@@ -404,11 +404,6 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
         const [codigo, userPointsStr, streamerPointsStr, streamerDiscordId] = args;
 
-        const rolRequerido = `Guild ${codigo}`;
-        if (!message.member.roles.cache.some(r => r.name === rolRequerido)) {
-            return message.reply(`No tienes el rol requerido: "${rolRequerido}" para ejecutar este comando.`);
-        }
-
         await ensureDataDirExists();
 
         // Leer el JSON actual
