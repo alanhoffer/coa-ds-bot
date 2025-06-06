@@ -95,14 +95,19 @@ export async function handleCommand(message) {
         }
     }
 
-    if (command === '!addsocial') {
+    if (message.content.startsWith('!addsocial')) {
+        const args = message.content.trim().split(/\s+/).slice(1); // quitar el comando
+
+        const username = message.author.username;
         const nickname = await userService.getNicknameBySocialId('discord', username);
+
         if (!nickname) {
             message.reply('❌ Please register in the !web before adding social.');
             return;
         }
-        if (args.length < 3) {
-            client.say(channel, `@${tags.username}, correct usage: !addsocial <twitch;youtube;> <socialId>`);
+
+        if (args.length < 2) {
+            message.reply('❌ Correct usage: `!addsocial <twitch|youtube> <socialId>`');
             return;
         }
 
@@ -110,9 +115,9 @@ export async function handleCommand(message) {
 
         try {
             await userService.addSocialToNickname(nickname, socialType, socialId);
-            client.say(channel, `@${tags.username}, social media ${socialType} successfully added for nickname ${nickname}.`);
+            message.reply(`✅ Social media **${socialType}** successfully added for nickname **${nickname}**.`);
         } catch (error) {
-            client.say(channel, `@${tags.username}, error: ${error.message}`);
+            message.reply(`❌ Error: ${error.message}`);
         }
     }
 
