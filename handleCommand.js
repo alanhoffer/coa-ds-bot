@@ -169,6 +169,16 @@ export async function handleCommand(message) {
         return;
     }
 
+    if (command === 'form') {
+        // Only admins can use this
+
+        const formMessage = `**Register your Nickname and Socials:**
+    \`https://forms.gle/c7prmGpDEJpqipAa6`;
+        message.channel.send(formMessage);
+        return;
+    }
+
+
 
     if (command === 'level') {
         const username = message.author.username;
