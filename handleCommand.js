@@ -443,14 +443,14 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
         // Crear el rol Guild <codigo> si no existe
         try {
-            let guildRole = message.guild.roles.cache.find(r => r.name === rolRequerido);
+            let guildRole = message.guild.roles.cache.find(r => r.name === `Guild ${codigo}`);
             if (!guildRole) {
                 // Función para generar color random en hex
                 const getRandomColor = () =>
                     `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
 
                 guildRole = await message.guild.roles.create({
-                    name: rolRequerido,
+                    name: `Guild ${codigo}`,
                     color: getRandomColor(),
                     reason: `Rol creado automáticamente para el referral ${codigo}`
                 });
