@@ -101,11 +101,6 @@ export async function handleCommand(message) {
         if (!message.member.permissions.has('ADMINISTRATOR')) {
             return message.reply('❌ You do not have permission to use this command.');
         }
-        
-        if (!nickname) {
-            message.reply('❌ Please register in the !web before adding social.');
-            return;
-        }
 
         if (args.length < 3) {
             message.reply('❌ Correct usage: `!addsocial <twitch|youtube> <socialId>`');
