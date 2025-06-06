@@ -404,8 +404,6 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
         const [codigo, userPointsStr, streamerPointsStr, streamerDiscordId] = args;
 
-        await ensureDataDirExists();
-
         // Leer el JSON actual
         let streamers = {};
         try {
