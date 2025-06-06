@@ -485,6 +485,13 @@ We’re excited to have you join this early stage of the game. Here are some imp
             claimData = {};
         }
 
+        // Verificar si el usuario ya reclamó algún código
+        const hasClaimedAny = Object.values(claimData).some(c => c.claimedBy?.includes(userId));
+        if (hasClaimedAny) {
+            message.reply('❌ You have already claimed a referral code before. Only one claim is allowed per user.');
+            return;
+        }
+
         // Validate that the code exists
         if (!claimData[param1]) {
             message.reply(`❌ The code "${param1}" is not valid.`);
@@ -495,6 +502,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         const alreadyClaimed = codeInfo.claimedBy?.includes(userId);
 
         if (alreadyClaimed) {
+            // Esta validación es redundante ahora, pero la dejo por seguridad
             message.reply(`❌ You have already used the code "${param1}".`);
             return;
         }
@@ -565,6 +573,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
         message.reply(`✅ You claimed ${codeInfo.userPoints} Points with the code "${param1}" and received the "${CLAIM_ROLE_NAME}" role! 🎉`);
     }
+
 
     if (command === 'addpoints') {
         // Only admins can use this
