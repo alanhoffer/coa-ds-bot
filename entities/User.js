@@ -471,6 +471,29 @@ class User {
         }
     }
 
+    async getSocialsByNickname(nickname) {
+        try {
+            const query = `
+            SELECT discord_username, youtube_username, twitch_username, instagram_username,
+                   tiktok_username, telegram_username, bluesky_username, patreon_username,
+                   boosty_username, vk_username
+            FROM reigdnqu_clashofadventurers.user_socials
+            WHERE LOWER(nickname) = LOWER(?)
+            LIMIT 1
+        `;
+            const [rows] = await this.queryExecutor(query, [nickname]);
+
+            if (rows.length === 0) {
+                throw new Error(`Usuario ${nickname} no encontrado.`);
+            }
+
+            return rows[0];
+        } catch (error) {
+            console.error('❌ Error al obtener redes sociales del usuario:', error.message);
+            return null;
+        }
+    }
+
     async addUserLevel(nickname, levelToAdd) {
         if (typeof levelToAdd !== 'number' || !Number.isInteger(levelToAdd) || levelToAdd < 0) {
             throw new TypeError('levelToAdd debe ser un número entero positivo');
