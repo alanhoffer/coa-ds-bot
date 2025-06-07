@@ -229,7 +229,7 @@ export async function handleCommand(message) {
             console.log(`Generating banner for user: userStats = ${JSON.stringify(userStats)}`);
             const imagePath = await generateUserBanner(userStats);
             await message.reply({
-                content: `Here is your banner, ${userStats.nickname}!`,
+                content: `${userStats.nickname}!`,
                 files: [imagePath]
             });
         } catch (error) {
