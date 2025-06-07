@@ -390,7 +390,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
             if (!nickname) {
                 return message.reply(
-                    `❌ No estás registrado. Usa el formulario para vincular tu cuenta de Discord:\n` +
+                    `❌ You are not registered. Use the form to link your Discord account:\n` +
                     `🔗https://forms.gle/c7prmGpDEJpqipAa6`
                 );
             }
