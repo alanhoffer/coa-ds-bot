@@ -184,8 +184,7 @@ export async function handleCommand(message) {
         const discordAvatarURL = message.author.displayAvatarURL({ format: 'png', size: 128 });
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply(`❌ Please register in the !form before viewing your stats.
-    \`https://forms.gle/c7prmGpDEJpqipAa6\``);
+            message.reply('❌ Please register in the form before viewing your stats.');
             return;
         }
         try {
@@ -197,7 +196,7 @@ export async function handleCommand(message) {
 
             // Add Discord avatar to userStats for the banner
             userStats.avatarPath = discordAvatarURL;
-            console.log(`Generating banner for user: userStats = ${JSON.stringify(userStats)} `);
+            console.log(`Generating banner for user: userStats = ${JSON.stringify(userStats)}`);
             const imagePath = await generateUserBanner(userStats);
             await message.reply({
                 content: `Here is your banner, ${userStats.nickname}!`,
@@ -212,68 +211,68 @@ export async function handleCommand(message) {
 
 
     if (command === 'rules') {
-        const rulesMessage = `** Server Rules:**
-                1. ** Mutual respect **: Treat all members with respect.Insults, harassment, or discrimination will not be tolerated.
-2. ** Appropriate content **: NSFW, violent, or illegal content is not allowed.Keep the chat friendly for all ages.
-3. ** No spam **: Avoid sending repetitive or irrelevant messages.Use the appropriate channels for each topic.
-4. ** Specific channels **: Use the designated channels for each type of content(games, memes, announcements, etc.).
-5. ** Moderation **: Follow the instructions of moderators and admins.They are here to maintain a pleasant environment.
-6. ** Advertising **: Advertising other servers or channels is not allowed without prior permission.
-7. ** Complaints and issues **: If you have a problem, contact a moderator privately.Do not make public complaints.
-8. ** Have fun **: This is a place to enjoy and share.Participate in activities and make new friends.
+        const rulesMessage = `**Server Rules:**
+1. **Mutual respect**: Treat all members with respect. Insults, harassment, or discrimination will not be tolerated.
+2. **Appropriate content**: NSFW, violent, or illegal content is not allowed. Keep the chat friendly for all ages.
+3. **No spam**: Avoid sending repetitive or irrelevant messages. Use the appropriate channels for each topic.
+4. **Specific channels**: Use the designated channels for each type of content (games, memes, announcements, etc.).
+5. **Moderation**: Follow the instructions of moderators and admins. They are here to maintain a pleasant environment.
+6. **Advertising**: Advertising other servers or channels is not allowed without prior permission.
+7. **Complaints and issues**: If you have a problem, contact a moderator privately. Do not make public complaints.
+8. **Have fun**: This is a place to enjoy and share. Participate in activities and make new friends.
 
-** Thank you for being part of our community! ** `;
+**Thank you for being part of our community!**`;
         message.channel.send(rulesMessage);
         return;
     }
 
     if (command === 'alpha') {
         // Shows information about the Alpha version of the game launching in December
-        const alphaInfo = `** Welcome to the Alpha version of Clash of Adventurers! **
-                We’re excited to have you join this early stage of the game.Here are some important details:
-- ** Launch date **: The Alpha version will be released in December.
-- ** Exclusive access **: You'll gain access through a key using Points and levels.
-                - ** Feedback **: Your opinion is crucial.Report bugs, share suggestions, and help us improve.
-- ** Rewards **: You can earn rewards by participating on social media.
-- ** Community **: Interact with other players, developers, and stay updated on the latest news.
+        const alphaInfo = `**Welcome to the Alpha version of Clash of Adventurers!**
+We’re excited to have you join this early stage of the game. Here are some important details:
+- **Launch date**: The Alpha version will be released in December.
+- **Exclusive access**: You'll gain access through a key using Points and levels.
+- **Feedback**: Your opinion is crucial. Report bugs, share suggestions, and help us improve.
+- **Rewards**: You can earn rewards by participating on social media.
+- **Community**: Interact with other players, developers, and stay updated on the latest news.
 
-** Thank you for joining the adventure in Clash of Adventurers! ** `;
+**Thank you for joining the adventure in Clash of Adventurers!**`;
         message.channel.send(alphaInfo);
         return;
     }
 
     if (command === 'support') {
-        const supportMessage = `** Need help ? Here’s how to contact us:**
-- ** Discord **: You can create a ticket on Discord for technical support or general questions.
-- ** Email **: You can send us an email at support @test.com
-- ** Social Media **: You can also reach us through our social media channels.
+        const supportMessage = `**Need help? Here’s how to contact us:**
+- **Discord**: You can create a ticket on Discord for technical support or general questions.
+- **Email**: You can send us an email at support@test.com
+- **Social Media**: You can also reach us through our social media channels.
 
-** We’re here to help you! ** `;
+**We’re here to help you!**`;
         message.channel.send(supportMessage);
         return;
     }
 
     if (command === 'rewards') {
-        const rewardsMessage = `** Available Rewards:**
-- ** Daily Rewards **: You can claim daily rewards every 24 hours.
-- ** Weekly Rewards **: Every week you can claim special rewards.
-- ** Quests **: Complete quests to earn additional rewards.
-- ** Special Events **: Participate in events to win unique rewards.
+        const rewardsMessage = `**Available Rewards:**
+- **Daily Rewards**: You can claim daily rewards every 24 hours.
+- **Weekly Rewards**: Every week you can claim special rewards.
+- **Quests**: Complete quests to earn additional rewards.
+- **Special Events**: Participate in events to win unique rewards.
 
-** Don’t forget to claim your rewards regularly! ** `;
+**Don’t forget to claim your rewards regularly!**`;
         message.channel.send(rewardsMessage);
         return;
     }
 
     if (command === 'socials' || command === 'social') {
-        const socialsMessage = `** Follow us on our social media:**
-** Twitch:** <https://www.twitch.tv/bija>
-** YouTube:** <https://www.youtube.com/@bijagaming>
-** Twitter:** <https://twitter.com/BijaGaming>
-** Discord:** <https://discord.gg/bija>
-** TikTok:** <https://www.tiktok.com/@bijagaming>
-** Instagram:** <https://www.instagram.com/bijagaming/>
-** Facebook:** <https://www.facebook.com/bijagaming>`;
+        const socialsMessage = `**Follow us on our social media:**
+**Twitch:** <https://www.twitch.tv/bija>
+**YouTube:** <https://www.youtube.com/@bijagaming>
+**Twitter:** <https://twitter.com/BijaGaming>
+**Discord:** <https://discord.gg/bija>
+**TikTok:** <https://www.tiktok.com/@bijagaming>
+**Instagram:** <https://www.instagram.com/bijagaming/>
+**Facebook:** <https://www.facebook.com/bijagaming>`;
         message.channel.send(socialsMessage);
         return;
     }
@@ -296,8 +295,7 @@ export async function handleCommand(message) {
         const username = message.author.username;
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply(`❌ Please register in the !form before open chest.
-    \`https://forms.gle/c7prmGpDEJpqipAa6\``);
+            message.reply('❌ Registrate en el form antes de abrir cofres.');
             return;
         }
 
@@ -361,8 +359,9 @@ export async function handleCommand(message) {
             console.log(`Looking up Points for user: ${username} with nickname: ${nickname}`);
 
             if (!nickname) {
-                return message.reply(`❌ Please register in the !form before viewing your points.
-    \`https://forms.gle/c7prmGpDEJpqipAa6\``);
+                return message.reply(
+                    `❌ No estás registrado. Usa el formulario para vincular tu cuenta de Discord:\n` +
+                    `🔗 https://tusitio.com/formulario`
                 );
             }
 
@@ -562,8 +561,7 @@ export async function handleCommand(message) {
         // Give Points to the user
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply(`❌ Please register in the !form before claiming rewards.
-    \`https://forms.gle/c7prmGpDEJpqipAa6\``);
+            message.reply('❌ Please register using the form before claiming a code.');
             return;
         }
 
