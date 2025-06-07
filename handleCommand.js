@@ -391,7 +391,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
             if (!nickname) {
                 return message.reply(
                     `❌ No estás registrado. Usa el formulario para vincular tu cuenta de Discord:\n` +
-                    `🔗 https://tusitio.com/formulario`
+                    `🔗https://forms.gle/c7prmGpDEJpqipAa6`
                 );
             }
 
@@ -401,7 +401,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
                 `🎉 Hello **${nickname}**!\n` +
                 `🔹 You currently have **${points}** Points.\n\n` +
                 `🔹 Earn more Points by watching streams, participating in chat, reacting, completing challenges, and much more!\n` +
-                `🔹 Use \`!redeem\` to claim rewards when you have enough.\n\n` +
+                `🔹 Use \`!level\` to see your level.\n\n` +
                 `🚀 Keep participating and climb the rankings!`
             );
         } catch (error) {
