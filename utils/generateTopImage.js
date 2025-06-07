@@ -107,7 +107,7 @@ export async function generateUserBanner(user) {
 
 
         // Nickname justo debajo
-        ctx.font = '22px Arial';
+        ctx.font = 'bold 22px Arial';
         ctx.fillText(`Rank #${user.rank}`, 350, 120);
 
         // Círculo con el nivel del usuario
