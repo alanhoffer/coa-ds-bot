@@ -96,18 +96,19 @@ export async function handleCommand(message) {
     }
 
     if (message.content.startsWith('!addsocial')) {
-        const args = message.content.trim().split(/\s+/).slice(1); // quitar el comando
+        const args = message.content.trim().split(/\s+/).slice(1);
 
         if (!message.member.permissions.has('ADMINISTRATOR')) {
             return message.reply('❌ You do not have permission to use this command.');
         }
 
         if (args.length < 3) {
-            message.reply('❌ Correct usage: `!addsocial <twitch|youtube> <socialId>`');
-            return;
+            return message.reply('❌ Correct usage: `!addsocial <nickname> <twitch|youtube> <socialId>`');
         }
 
-        const [nickname, socialType, socialId] = args;
+        const nickname = args.slice(0, -2).join(' ');
+        const socialType = args[args.length - 2];
+        const socialId = args[args.length - 1];
 
         try {
             await userService.addSocialToNickname(nickname, socialType, socialId);
@@ -117,13 +118,14 @@ export async function handleCommand(message) {
         }
     }
 
+
     if (command === 'getsocials') {
         const args = message.content.trim().split(/\s+/).slice(1); // quitar el comando
 
         if (!message.member.permissions.has('ADMINISTRATOR')) {
             return message.reply('❌ You do not have permission to use this command.');
         }
-        
+
         if (args.length < 1) {
             return message.reply('❌ Usage: `!getsocials <nickname>`');
         }
@@ -144,7 +146,7 @@ export async function handleCommand(message) {
             message.reply('❌ An error occurred while retrieving the social media. Please try again later.');
         }
     }
-    
+
 
 
     if (command === 'updatesupporter') {
