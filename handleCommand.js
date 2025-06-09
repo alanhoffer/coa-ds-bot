@@ -636,7 +636,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
 
             const role = guild.roles.cache.find(r => r.name === `Guild ${param1}`);
             if (!role) {
-                message.reply(`❌ The role "${CLAIM_ROLE_NAME}" was not found in the server.`);
+                message.reply(`❌ The role "Guild ${param1}" was not found in the server.`);
                 console.log(`❌ Available roles: ${guild.roles.cache.map(r => r.name).join(', ')}`);
                 return;
             }
@@ -651,7 +651,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         // Save changes
         await fs.writeFile(CLAIM_FILE, JSON.stringify(claimData, null, 2));
 
-        message.reply(`✅ You claimed ${codeInfo.userPoints} Points with the code "${param1}" and received the "${CLAIM_ROLE_NAME}" role! 🎉`);
+        message.reply(`✅ You claimed ${codeInfo.userPoints} Points with the code "${param1}" and received the "Guild ${param1}" role! 🎉`);
     }
 
 
