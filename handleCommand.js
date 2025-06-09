@@ -204,7 +204,7 @@ export async function handleCommand(message) {
     if (command === 'form') {
 
         const formMessage = `**Register your Nickname and Socials:**
-    \`https://forms.gle/c7prmGpDEJpqipAa6`;
+    🔗https://forms.gle/c7prmGpDEJpqipAa6`;
         message.channel.send(formMessage);
         return;
     }
@@ -216,7 +216,8 @@ export async function handleCommand(message) {
         const discordAvatarURL = message.author.displayAvatarURL({ format: 'png', size: 128 });
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply('❌ Please register in the form before viewing your stats.');
+            message.reply(`❌ Please register in the form before viewing your stats.
+                🔗https://forms.gle/c7prmGpDEJpqipAa6`);
             return;
         }
         try {
@@ -633,7 +634,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
                 return;
             }
 
-            const role = guild.roles.cache.find(r => r.name === CLAIM_ROLE_NAME);
+            const role = guild.roles.cache.find(r => r.name === `Guild ${param1}`);
             if (!role) {
                 message.reply(`❌ The role "${CLAIM_ROLE_NAME}" was not found in the server.`);
                 console.log(`❌ Available roles: ${guild.roles.cache.map(r => r.name).join(', ')}`);

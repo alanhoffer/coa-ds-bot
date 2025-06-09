@@ -1,16 +1,16 @@
 {
-  "Bija": {
-    "claimedBy": [
-      "264440957443768330"
-    ],
-    "userPoints": 10,
-    "streamerPoints": 5,
-    "streamerId": "bapesamaa"
-  },
   "pepito": {
     "claimedBy": [],
     "userPoints": 10,
     "streamerPoints": 5,
     "streamerId": "zero_dev"
+  },
+  "Kmpee": {
+    "claimedBy": [
+      "264440957443768330"
+    ],
+    "userPoints": 50,
+    "streamerPoints": 50,
+    "streamerId": "kmpee"
   }
 }
