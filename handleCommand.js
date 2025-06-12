@@ -201,7 +201,7 @@ export async function handleCommand(message) {
         return;
     }
 
-    if (command === '!web') {
+    if (command === 'web') {
 
         const formMessage = `**Register your Nickname and Socials:**
     🔗https://clashofadventurers.com/firstadventurer-form`;
