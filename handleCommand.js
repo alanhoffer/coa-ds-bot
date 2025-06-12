@@ -63,7 +63,7 @@ export async function handleCommand(message) {
                 const username = message.author.username;
                 nickname = await userService.getNicknameBySocialId('discord', username);
                 if (!nickname) {
-                    return message.reply('❌ Please register using the form before checking your supporter status.');
+                    return message.reply('❌ Please register using the !web before checking your supporter status.');
                 }
             }
 
@@ -201,10 +201,10 @@ export async function handleCommand(message) {
         return;
     }
 
-    if (command === 'form') {
+    if (command === '!web') {
 
         const formMessage = `**Register your Nickname and Socials:**
-    🔗https://forms.gle/c7prmGpDEJpqipAa6`;
+    🔗https://clashofadventurers.com/firstadventurer-form`;
         message.channel.send(formMessage);
         return;
     }
@@ -217,7 +217,7 @@ export async function handleCommand(message) {
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
             message.reply(`❌ Please register in the form before viewing your stats.
-                🔗https://forms.gle/c7prmGpDEJpqipAa6`);
+                🔗https://clashofadventurers.com/firstadventurer-form`);
             return;
         }
         try {
@@ -328,7 +328,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         const username = message.author.username;
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply('❌ Registrate en el form antes de abrir cofres.');
+            message.reply('❌ Registrate en la !web antes de abrir cofres.');
             return;
         }
 
@@ -394,7 +394,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
             if (!nickname) {
                 return message.reply(
                     `❌ You are not registered. Use the form to link your Discord account:\n` +
-                    `🔗https://forms.gle/c7prmGpDEJpqipAa6`
+                    `🔗https://clashofadventurers.com/firstadventurer-form`
                 );
             }
 
@@ -594,7 +594,7 @@ We’re excited to have you join this early stage of the game. Here are some imp
         // Give Points to the user
         const nickname = await userService.getNicknameBySocialId('discord', username);
         if (!nickname) {
-            message.reply('❌ Please register using the form before claiming a code.');
+            message.reply('❌ Please register using the web before claiming a code.');
             return;
         }
 
